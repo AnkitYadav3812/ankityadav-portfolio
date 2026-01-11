@@ -1,0 +1,133 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Inter, sans-serif;
+}
+
+body {
+  background-color: #0b0f14;
+  color: #e5e7eb;
+  line-height: 1.7;
+}
+
+/* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 8%;
+  border-bottom: 1px solid #1f2933;
+}
+
+.navbar a {
+  color: #cbd5e1;
+  margin-left: 20px;
+  text-decoration: none;
+}
+
+.logo {
+  font-weight: 600;
+}
+
+/* HERO */
+.hero {
+  padding: 80px 8%;
+  max-width: 900px;
+}
+
+.hero h1 {
+  font-size: 2.6rem;
+  font-weight: 600;
+}
+
+.hero-subtitle {
+  margin-top: 20px;
+  color: #9ca3af;
+}
+
+.hero-actions {
+  margin-top: 30px;
+}
+
+.btn {
+  padding: 10px 22px;
+  margin-right: 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.outline {
+  border: 1px solid #374151;
+  color: #cbd5e1;
+}
+
+/* SECTIONS */
+.section {
+  padding: 70px 8%;
+}
+
+.section.dark {
+  background-color: #0f1620;
+}
+
+.section h2 {
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+/* EXPERTISE */
+.expertise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.expertise-grid h3 {
+  margin-bottom: 10px;
+}
+
+/* STACK */
+.stack-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+}
+
+.stack-grid ul {
+  list-style: none;
+  color: #9ca3af;
+}
+
+/* PROJECTS */
+.project {
+  margin-bottom: 40px;
+}
+
+.project h3 {
+  margin-bottom: 10px;
+}
+
+/* CERTIFICATIONS */
+.cert-list {
+  list-style: none;
+  color: #cbd5e1;
+}
+
+/* CONTACT */
+.contact {
+  text-align: center;
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 30px;
+  color: #6b7280;
+  border-top: 1px solid #1f2933;
+}
