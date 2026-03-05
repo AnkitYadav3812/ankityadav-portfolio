@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="PDF Toolkit - Merge, split, compress, convert, protect and edit PDFs online." />
+  <title>PDF Toolkit | Online PDF Tools</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { brand: '#ef4444' } } }
+    }
+  </script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-white text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useMemo, useState } = React;
+
+    const tools = [
+      { id: 'remove-watermark', name: 'PDF Watermark Remover', desc: 'Detect and remove watermark overlays.' },
+      { id: 'add-watermark', name: 'Add Watermark', desc: 'Add text or image watermark with opacity control.' },
+      { id: 'merge-pdf', name: 'Merge PDF', desc: 'Combine multiple PDFs into one document.' },
+      { id: 'split-pdf', name: 'Split PDF', desc: 'Extract selected pages from your PDF.' },
+      { id: 'compress-pdf', name: 'Compress PDF', desc: 'Reduce file size while keeping good quality.' },
+      { id: 'pdf-to-word', name: 'PDF to Word', desc: 'Convert PDF into editable DOC format.' },
+      { id: 'word-to-pdf', name: 'Word to PDF', desc: 'Convert DOC/DOCX to high quality PDF.' },
+      { id: 'pdf-to-jpg', name: 'PDF to JPG', desc: 'Convert pages into high-res images.' },
+      { id: 'jpg-to-pdf', name: 'JPG to PDF', desc: 'Create PDFs from images.' },
+      { id: 'rotate-pdf', name: 'Rotate PDF', desc: 'Rotate all pages instantly.' },
+      { id: 'protect-pdf', name: 'Protect PDF', desc: 'Secure PDF with password protection.' },
+      { id: 'unlock-pdf', name: 'Unlock PDF', desc: 'Remove known password restrictions.' },
+    ];
+
+    const pages = ['home', 'tools', 'about', 'contact', 'privacy'];
+
+    function App() {
+      const [page, setPage] = useState('home');
+      const [dark, setDark] = useState(false);
+      const [selectedTool, setSelectedTool] = useState('merge-pdf');
+      const [files, setFiles] = useState([]);
+      const [status, setStatus] = useState('');
+      const [error, setError] = useState('');
+      const [downloadUrl, setDownloadUrl] = useState('');
+      const [progress, setProgress] = useState(0);
+      const [watermarkText, setWatermarkText] = useState('CONFIDENTIAL');
+      const [opacity, setOpacity] = useState(0.25);
+
+      React.useEffect(() => {
+        document.documentElement.classList.toggle('dark', dark);
+      }, [dark]);
+
+      const currentTool = useMemo(() => tools.find(t => t.id === selectedTool), [selectedTool]);
+
+      const onSelectFiles = (list) => {
+        const f = Array.from(list || []);
+        const tooBig = f.find((file) => file.size > 50 * 1024 * 1024);
+        if (tooBig) return setError('Max upload size is 50MB per file.');
+        setError('');
+        setFiles(f);
+      }
+
+      const processTool = async () => {
+        if (!files.length) return setError('Please upload at least one file.');
+        setError('');
+        setStatus('Processing...');
+        setDownloadUrl('');
+        setProgress(5);
+
+        const fd = new FormData();
+        files.forEach(f => fd.append('files', f));
+        fd.append('text', watermarkText);
+        fd.append('opacity', opacity);
+
+        const fake = setInterval(() => setProgress(p => Math.min(p + 10, 90)), 250);
+        try {
+          const res = await fetch(`/api/tool/${selectedTool}`, { method: 'POST', body: fd });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed');
+          setProgress(100);
+          setStatus(data.message);
+          setDownloadUrl(data.downloadUrl);
+        } catch (e) {
+          setError(e.message);
+          setStatus('');
+        } finally {
+          clearInterval(fake);
+        }
+      }
+
+      return (
+        <div>
+          <header className="sticky top-0 z-20 border-b bg-white/90 px-6 py-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90 md:px-10">
+            <div className="mx-auto flex max-w-6xl items-center justify-between">
+              <button onClick={() => setPage('home')} className="text-xl font-semibold">PDF <span className="text-brand">Toolkit</span></button>
+              <nav className="hidden gap-6 md:flex">
+                {pages.map(p => <button key={p} onClick={() => setPage(p)} className="capitalize hover:text-brand">{p}</button>)}
+              </nav>
+              <button onClick={() => setDark(!dark)} className="rounded border px-3 py-1 text-sm dark:border-slate-700">{dark ? 'Light' : 'Dark'}</button>
+            </div>
+          </header>
+
+          <main className="mx-auto max-w-6xl px-6 py-10 md:px-10">
+            {page === 'home' && (
+              <>
+                <section className="rounded-2xl bg-slate-50 p-8 dark:bg-slate-900">
+                  <h1 className="text-4xl font-bold">Every tool you need to work with PDFs</h1>
+                  <p className="mt-3 text-slate-600 dark:text-slate-300">Modern online PDF software for professionals. Fast processing, secure uploads, no permanent storage.</p>
+                  <button onClick={() => setPage('tools')} className="mt-6 rounded-xl bg-brand px-8 py-4 text-lg font-semibold text-white">Upload PDF</button>
+                </section>
+                <h2 className="mt-10 text-2xl font-semibold">PDF Tools</h2>
+                <section className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {tools.map(t => (
+                    <button key={t.id} onClick={() => { setPage('tools'); setSelectedTool(t.id); }} className="rounded-xl border bg-white p-4 text-left shadow-sm hover:border-brand dark:border-slate-800 dark:bg-slate-900">
+                      <h3 className="font-semibold">{t.name}</h3>
+                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{t.desc}</p>
+                    </button>
+                  ))}
+                </section>
+              </>
+            )}
+
+            {page === 'tools' && (
+              <section className="grid gap-8 lg:grid-cols-3">
+                <div className="rounded-xl border p-5 dark:border-slate-800">
+                  <h2 className="text-xl font-semibold">Select Tool</h2>
+                  <div className="mt-4 space-y-2 max-h-[420px] overflow-auto">
+                    {tools.map(t => <button key={t.id} onClick={() => setSelectedTool(t.id)} className={`w-full rounded p-2 text-left ${selectedTool===t.id ? 'bg-brand text-white' : 'bg-slate-100 dark:bg-slate-900'}`}>{t.name}</button>)}
+                  </div>
+                </div>
+                <div className="lg:col-span-2 rounded-xl border p-5 dark:border-slate-800">
+                  <h2 className="text-xl font-semibold">{currentTool.name}</h2>
+                  <p className="mt-1 text-slate-600 dark:text-slate-300">{currentTool.desc}</p>
+
+                  <label onDragOver={(e)=>e.preventDefault()} onDrop={(e)=>{e.preventDefault(); onSelectFiles(e.dataTransfer.files)}} className="mt-5 block cursor-pointer rounded-xl border-2 border-dashed p-10 text-center hover:border-brand">
+                    <input type="file" multiple className="hidden" onChange={(e)=>onSelectFiles(e.target.files)} />
+                    <p className="font-medium">Drag & drop files here or click to upload</p>
+                    <p className="text-sm text-slate-500">Max file size: 50MB</p>
+                  </label>
+
+                  {!!files.length && <p className="mt-3 text-sm">Selected: {files.map(f => f.name).join(', ')}</p>}
+
+                  {selectedTool === 'add-watermark' && (
+                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                      <input value={watermarkText} onChange={(e)=>setWatermarkText(e.target.value)} className="rounded border p-2 bg-transparent" placeholder="Watermark text" />
+                      <input type="range" min="0.1" max="0.9" step="0.05" value={opacity} onChange={(e)=>setOpacity(e.target.value)} />
+                    </div>
+                  )}
+
+                  <button onClick={processTool} className="mt-6 rounded-lg bg-brand px-6 py-3 font-semibold text-white">Process PDF</button>
+
+                  {progress > 0 && <div className="mt-4 h-3 overflow-hidden rounded bg-slate-200 dark:bg-slate-800"><div className="h-full bg-brand" style={{width:`${progress}%`}} /></div>}
+                  {status && <p className="mt-3 text-green-600">{status}</p>}
+                  {error && <p className="mt-3 text-red-600">{error}</p>}
+                  {downloadUrl && <a className="mt-4 inline-block rounded bg-slate-900 px-5 py-2 text-white dark:bg-white dark:text-slate-900" href={downloadUrl}>Download Result</a>}
+                </div>
+              </section>
+            )}
+
+            {page === 'about' && <section><h1 className="text-3xl font-bold">About PDF Toolkit</h1><p className="mt-3">PDF Toolkit is a lightweight SaaS-style toolkit designed for fast and secure document processing with automatic file cleanup.</p></section>}
+            {page === 'contact' && <section><h1 className="text-3xl font-bold">Contact</h1><p className="mt-3">Email: support@pdftoolkit.app</p><p>Business: enterprise@pdftoolkit.app</p></section>}
+            {page === 'privacy' && <section><h1 className="text-3xl font-bold">Privacy Policy</h1><p className="mt-3">Uploaded files are only used for processing and automatically deleted. We do not permanently store user files.</p></section>}
+          </main>
+        </div>
+      )
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+  </script>
+</body>
+</html>
